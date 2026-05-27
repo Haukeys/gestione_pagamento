@@ -68,6 +68,10 @@
             <artifactId>spring-boot-starter-validation</artifactId>
             <version>3.5.7</version>
         </dependency>
+        <dependency><!--RABBITMQ-->
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
