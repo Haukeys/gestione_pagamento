@@ -33,4 +33,9 @@ public class PagamentoController {
         List<PagamentoHistoryDTO> history = pagamentoService.getPaymentsByOrderId(idOrdine);
         return ResponseEntity.ok(history);
     }
+    @GetMapping("/ordine/{idOrdine}/status")
+    public ResponseEntity<PaymentResponseDTO> getPaymentStatusByOrdineId(@PathVariable("idOrdine") UUID idOrdine) {
+        PaymentResponseDTO response = pagamentoService.getPaymentStatusByOrdineId(idOrdine);
+        return ResponseEntity.ok(response);
+    }
 }
