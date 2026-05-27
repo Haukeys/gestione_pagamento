@@ -11,4 +11,5 @@ public interface PagamentoService {
 
     public PaymentResponseDTO processPayment(PaymentRequestDTO request);
     public List<PagamentoHistoryDTO> getPaymentsByOrderId(UUID idOrdine);
+    public PaymentResponseDTO getPaymentStatusByOrdineId(UUID idOrdine);
 }

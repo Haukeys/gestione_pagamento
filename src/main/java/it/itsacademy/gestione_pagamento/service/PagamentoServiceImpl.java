@@ -7,8 +7,10 @@ import it.itsacademy.gestione_pagamento.entity.Pagamento;
 import it.itsacademy.gestione_pagamento.entity.TipoPagamento;
 import it.itsacademy.gestione_pagamento.repository.PagamentoRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 
 import java.time.LocalDate;
@@ -63,6 +65,25 @@ public class PagamentoServiceImpl implements PagamentoService {
                 ))
                 .collect(Collectors.toList());
     }
+    @Override
+    public PaymentResponseDTO getPaymentStatusByOrdineId(UUID idOrdine) {
+        // 1. On cherche la liste des paiements liés à la commande
+        List<Pagamento> pagamenti = pagamentoRepository.findByIdOrdine(idOrdine);
 
+        // Si la liste est vide, on lève l'exception
+        if (pagamenti.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pagamento non trovato");
+        }
+        // On récupère le premier paiement trouvé
+        Pagamento pagamento = pagamenti.get(0);
+
+        // 2. On remplit le DTO de réponse
+        PaymentResponseDTO response = new PaymentResponseDTO();
+        response.setIdPagamento(pagamento.getId());
+        response.setIdOrdine(pagamento.getIdOrdine());
+        response.setStatoPagamento(pagamento.getStatoPagamento());
+
+        return response;
+    }
 
 }
