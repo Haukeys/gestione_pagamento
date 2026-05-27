@@ -14,7 +14,7 @@ public class PaymentListenerAMQP {
     private final PagamentoService pagamentoService;
 
     @RabbitListener(queues = "exam_queue")
-    public void receivePaymentRequest(PaymentRequestDTO requestDTO) { // 👈 Jackson reconstruit l'objet ici !
+    public void receivePaymentRequest(PaymentRequestDTO requestDTO) { //Jackson reconstruit l'objet ici !
         System.out.println("[8081] JSON ricevuto e convertito per l'ordine ID: " + requestDTO.getIdOrdine());
 
         // Tu passes directement l'objet à ton service pour traitement
