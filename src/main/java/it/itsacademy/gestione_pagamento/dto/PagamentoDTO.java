@@ -22,7 +22,7 @@ public class PagamentoDTO {
 
     private LocalDate dataPagamento;
     @NotNull(message = "stato di Pagamento non puo essere null")
-    @NotBlank(message = "stato di pagamento non puo essere vuoto")
+
     private TipoPagamento statoPagamento;
 
 }
