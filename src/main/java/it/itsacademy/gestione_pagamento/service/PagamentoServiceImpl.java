@@ -74,8 +74,10 @@ public class PagamentoServiceImpl implements PagamentoService {
         if (pagamenti.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Pagamento non trovato");
         }
-        // On récupère le premier paiement trouvé
-        Pagamento pagamento = pagamenti.get(0);
+        Pagamento pagamento = pagamenti.stream()//changement pour que au moin avec 1 ok ça change
+                .filter(p -> p.getStatoPagamento() == TipoPagamento.ACCETTATO)
+                .findFirst()
+                .orElse(pagamenti.get(pagamenti.size() - 1));
 
         // 2. On remplit le DTO de réponse
         PaymentResponseDTO response = new PaymentResponseDTO();
