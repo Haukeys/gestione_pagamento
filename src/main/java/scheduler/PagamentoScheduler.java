@@ -16,7 +16,7 @@ public class PagamentoScheduler {
     @Scheduled(fixedRateString = "${cron.clean.payments.rate:300000}")
     public void executeAutomaticCleanup() {
         try {
-            pagamentoServiceImpl.cleanFailedPayments();
+            pagamentoServiceImpl.eliminaPagamentiRifiutati();
             System.out.println("[SCHEDULER] Eliminazaione avvenuta con successo tutti i pagamenti  'RIFIUTATO' sono stati eliminati.");
         } catch (Exception e) {
             System.err.println("[SCHEDULER] Errore durante l'eliminazione dei pagamenti 'RIFIUTATo' : " + e.getMessage());
