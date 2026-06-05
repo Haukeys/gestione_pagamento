@@ -87,5 +87,9 @@ public class PagamentoServiceImpl implements PagamentoService {
 
         return response;
     }
-
+    @Override
+    @Transactional
+    public void eliminaPagamentiRifiutati() {
+        pagamentoRepository.deleteByStatoPagamento(TipoPagamento.RIFIUTATO);
+    }
 }
