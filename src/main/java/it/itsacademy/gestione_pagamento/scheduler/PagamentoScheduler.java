@@ -1,4 +1,4 @@
-package scheduler;
+package it.itsacademy.gestione_pagamento.scheduler;
 
 import it.itsacademy.gestione_pagamento.service.PagamentoServiceImpl;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +13,9 @@ public class PagamentoScheduler {
 
     //Tâche planifiée qui s'exécute toutes les 5 minutes (configuré dans application.properties).
 
-    @Scheduled(fixedRateString = "${cron.clean.payments.rate:300000}")
+    @Scheduled(fixedRateString = "${cron.clean.payments.rate}")
     public void executeAutomaticCleanup() {
+        System.out.println("SCHEDULER");
         try {
             pagamentoServiceImpl.eliminaPagamentiRifiutati();
             System.out.println("[SCHEDULER] Eliminazaione avvenuta con successo tutti i pagamenti  'RIFIUTATO' sono stati eliminati.");
