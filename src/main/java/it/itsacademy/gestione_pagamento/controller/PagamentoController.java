@@ -38,4 +38,6 @@ public class PagamentoController {
         PaymentResponseDTO response = pagamentoService.getPaymentStatusByOrdineId(idOrdine);
         return ResponseEntity.ok(response);
     }
+    @GetMapping(path = "/health")//pour check health avec docker
+    public void health() {}
 }
