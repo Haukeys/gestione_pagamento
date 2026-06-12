@@ -12,6 +12,9 @@ public class PaymentRequestDTO {
     @NotNull(message = "Id ordine obbligatorio")
     private UUID idOrdine;
 
+    @NotNull(message = "Id utente obbligatorio")//ajout pour match le changement effectuer dans gestione ordini au meme niveau
+    private UUID idUtente;
+
     @NotNull(message = "Totale obbligatorio")
     @Positive(message = "Il totale deve essere maggiore di zero")
     private Double totale;
