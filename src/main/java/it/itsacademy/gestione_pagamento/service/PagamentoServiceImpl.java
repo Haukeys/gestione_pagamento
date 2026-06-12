@@ -1,8 +1,12 @@
 package it.itsacademy.gestione_pagamento.service;
 
+import it.itsacademy.gestione_pagamento.client.AuthServiceClient;
 import it.itsacademy.gestione_pagamento.dto.PagamentoHistoryDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentRequestDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentResponseDTO;
+import it.itsacademy.gestione_pagamento.dto.UserEmailDTO;
+import it.itsacademy.gestione_pagamento.email.EmailService;
+import it.itsacademy.gestione_pagamento.email.EmailServiceImpl;
 import it.itsacademy.gestione_pagamento.entity.Pagamento;
 import it.itsacademy.gestione_pagamento.entity.TipoPagamento;
 import it.itsacademy.gestione_pagamento.repository.PagamentoRepository;
@@ -26,7 +30,8 @@ public class PagamentoServiceImpl implements PagamentoService {
 
     private final PagamentoRepository pagamentoRepository;
     private final Random random = new Random(); // Générateur aléatoire pour simuler la banque
-
+    private final EmailServiceImpl emailService;//injection de l email
+    private final AuthServiceClient authServiceClient;
     /**
      * Reçoit la demande de paiement, simule le résultat,
      * persiste la transaction et renvoie le rapport au microservice 8080.
@@ -45,6 +50,23 @@ public class PagamentoServiceImpl implements PagamentoService {
         pagamento.setIdOrdine(request.getIdOrdine());
         // Sauvegarde de l'historique dans MySQL (génère l'UUID automatique de la transaction)
         pagamento = pagamentoRepository.save(pagamento);
+        //Ajouter pour faire partir l'email de validation ou de rejet
+        UserEmailDTO user =
+                authServiceClient.getUser(
+                        request.getIdUtente());
+
+        if (risultato == TipoPagamento.ACCETTATO) {
+
+            emailService.sendPaymentAccepted(//message payement accepter
+                    user.getEmail(),
+                    user.getUsername());
+
+        } else {
+
+            emailService.sendPaymentRejected(//message payement refuser
+                    user.getEmail(),
+                    user.getUsername());
+        }
 
         // Assemblage manuel et propre du DTO de réponse
         return new PaymentResponseDTO(
