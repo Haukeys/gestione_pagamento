@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOG_DIR" value="./logs" />
-    <property name="LOG_FILE" value="gestione-pagamento" />
+    <property name="LOG_DIR" value="./logs" /><!--ici on a les valeur qu on voit plus bas avec le $-->
+    <property name="LOG_FILE" value="gestione-pagamento" /><!--les 2 proprieter represente le path ou ce trouvera le fichier de log-->
 
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern><!--format des log dans le fichier ou en consol-->
         </encoder>
     </appender>
 
     <appender name="RollingFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_DIR}/${LOG_FILE}.log</file>
+        <file>${LOG_DIR}/${LOG_FILE}.log</file><!--path du fichier des log-->
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_DIR}/archived/${LOG_FILE}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <maxFileSize>10MB</maxFileSize>
-            <maxHistory>30</maxHistory>
-            <totalSizeCap>1GB</totalSizeCap>
-        </rollingPolicy>
+            <fileNamePattern>${LOG_DIR}/archived/${LOG_FILE}-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern><!--ici on a le ficher d archive et non pas le fichier de base, c est le zip des log si on veux-->
+            <maxFileSize>10MB</maxFileSize><!--la taille maximal du fichier compresser-->
+            <maxHistory>30</maxHistory><!--le maximum de fichier compreser visible-->
+            <totalSizeCap>1GB</totalSizeCap><!--la taille maximal utiliser avant que ça supprime automatiquement le surplus-->
+        </rollingPolicy><!---->
     </appender>
 
     <root level="INFO">
-        <appender-ref ref="Console" />
-        <appender-ref ref="RollingFile" />
+        <appender-ref ref="Console" /><!--montre les log en consol-->
+        <appender-ref ref="RollingFile" /><!--sauvegarde les log dans le fivhier-->
     </root>
 
     <logger name="org.hibernate.SQL" level="INFO" />
@@ -38,3 +38,4 @@
                     du `PagamentoController` modifiés à l'étape précédente,
                         l'intégralité de votre configuration et
                             de votre logique de logs est maintenant complète, structurée et balisée.-->
+        <!---->
