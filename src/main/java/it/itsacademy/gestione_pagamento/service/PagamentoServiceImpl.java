@@ -5,7 +5,6 @@ import it.itsacademy.gestione_pagamento.dto.PagamentoHistoryDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentRequestDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentResponseDTO;
 import it.itsacademy.gestione_pagamento.dto.UserEmailDTO;
-import it.itsacademy.gestione_pagamento.email.EmailService;
 import it.itsacademy.gestione_pagamento.email.EmailServiceImpl;
 import it.itsacademy.gestione_pagamento.entity.Pagamento;
 import it.itsacademy.gestione_pagamento.entity.TipoPagamento;
@@ -18,7 +17,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Random;
 import java.util.UUID;
