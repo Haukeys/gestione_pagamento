@@ -32,5 +32,4 @@ build/
 ### VS Code ###
 .vscode/
 .env
-
-/home/vboxuser/stage/gestione_pagamento/logs/gestione-pagamento.log
+logs
