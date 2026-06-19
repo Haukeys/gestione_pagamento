@@ -81,6 +81,6 @@ public class PagamentoController {
 
         // Transmission de la ligne de journalisation au niveau INFO
         //L'utilisation de "{}" évite de concaténer manuellement des chaînes de caractères, permettant ainsi une évaluation dynamique au moment de l'exécution (optimisation des performances).
-        log.info("[API INBOUND] User: {} | HTTP Method: {} | URI: {}", userIdentifier, method, uri);
-    }
+        log.info("[API ACTION] User: {} | HTTP Method: {} | URI: {}", userIdentifier, method, uri);
+    }//ON MET ACTION POUR MATCH AVEC ORDINI
 }
