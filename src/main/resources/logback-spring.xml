@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOG_DIR" value="./logs" /><!--ici on a les valeur qu on voit plus bas avec le $-->
+    <property name="LOG_DIR" value="./logs" /><!--ici on a les valeur qu on voit plus bas avec le $. dans notre cas ici ./logs veut dire aaps/logs sur docker-->
     <property name="LOG_FILE" value="gestione-pagamento" /><!--les 2 proprieter represente le path ou ce trouvera le fichier de log-->
 
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
@@ -24,7 +24,8 @@
         </rollingPolicy><!---->
     </appender>
 
-    <root level="INFO">
+    <root level="DEBUG"><!--niveau le plus bas pour montre dans le filtre tout les autre niveau
+    (WARN ERROR INFO)-->
         <appender-ref ref="Console" /><!--montre les log en consol-->
         <appender-ref ref="RollingFile" /><!--sauvegarde les log dans le fivhier-->
     </root>
