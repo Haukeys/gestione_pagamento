@@ -30,4 +30,7 @@ public class Pagamento {
     @Column(name = "id_ordine", nullable = false)
     private UUID idOrdine;
 
+    // NOUVEAU : Colonne optionnelle (si le pagamento est rifiutato) pour stocker le nom de la ricevuta
+    @Column(name = "nome_ricevuta", nullable = true)
+    private String nomeRicevuta;
 }
