@@ -14,4 +14,6 @@ public class PaymentResponseDTO {
     private UUID idPagamento;
     private UUID idOrdine;
     private TipoPagamento statoPagamento; // L'enum sera automatiquement converti en String dans le JSON
+    // NOUVEAU : On ajoute cette propriété pour transporter le nom du fichier vers l'extérieur
+    private String nomeRicevuta;
 }
