@@ -9,6 +9,7 @@ import it.itsacademy.gestione_pagamento.email.EmailServiceImpl;
 import it.itsacademy.gestione_pagamento.entity.Pagamento;
 import it.itsacademy.gestione_pagamento.entity.TipoPagamento;
 import it.itsacademy.gestione_pagamento.repository.PagamentoRepository;
+import it.itsacademy.gestione_pagamento.ricevuta.RicevutaServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
@@ -34,6 +36,7 @@ public class PagamentoServiceImpl implements PagamentoService {
      * Reçoit la demande de paiement, simule le résultat,
      * persiste la transaction et renvoie le rapport au microservice 8080.
      */
+    private final RicevutaServiceImpl ricevutaService;
 
     @Override
     @Transactional
@@ -58,7 +61,24 @@ public class PagamentoServiceImpl implements PagamentoService {
             emailService.sendPaymentAccepted(//message payement accepter
                     user.getEmail(),
                     user.getUsername());
+            // NOUVEAU : Utilisation du RicevutaService isolé
+            try {
+                String idUtenteStr = request.getIdUtente().toString();
+                String totaleStr = request.getTotale() != null ? request.getTotale().toString() : "0.0";
 
+                // Génération externe du fichier .txt
+                String nomeFile = ricevutaService.generareRicevutaFisica(idUtenteStr, totaleStr);
+
+                // Sauvegarde du nom de fichier en BDD MySQL via le repository
+                pagamentoRepository.updateNomeRicevutaById(pagamento.getId(), nomeFile);
+                pagamento.setNomeRicevuta(nomeFile); // Met à jour l'objet pour la réponse DTO
+
+                System.out.println("[8081] Ricevuta generata dal servizio: " + nomeFile);
+
+            } catch (IOException e) {
+                // On log l'erreur d'écriture, mais on ne bloque pas la transaction d'un paiement accepté
+                System.err.println("[8081] Errore critico salvataggio file ricevuta: " + e.getMessage());
+            }
         } else {
 
             emailService.sendPaymentRejected(//message payement refuser
@@ -70,7 +90,8 @@ public class PagamentoServiceImpl implements PagamentoService {
         return new PaymentResponseDTO(
                 pagamento.getId(),
                 request.getIdOrdine(),
-                pagamento.getStatoPagamento()
+                pagamento.getStatoPagamento(),
+                pagamento.getNomeRicevuta()
         );
     }
     @Override
@@ -104,7 +125,7 @@ public class PagamentoServiceImpl implements PagamentoService {
         response.setIdPagamento(pagamento.getId());
         response.setIdOrdine(pagamento.getIdOrdine());
         response.setStatoPagamento(pagamento.getStatoPagamento());
-
+        response.setNomeRicevuta(pagamento.getNomeRicevuta()); // ajout pour etre mirroir avec ordini
         return response;
     }
     @Override
