@@ -58,7 +58,7 @@ public class PagamentoServiceImpl implements PagamentoService {
 
         if (risultato == TipoPagamento.ACCETTATO) {
 
-            emailService.sendPaymentAccepted(//message payement accepter
+            emailService.sendPaymentAccepted(//MESSAGE PAYEMENT ACCEPTER
                     user.getEmail(),
                     user.getUsername());
             // NOUVEAU : Utilisation du RicevutaService isolé
@@ -78,10 +78,11 @@ public class PagamentoServiceImpl implements PagamentoService {
             } catch (IOException e) {
                 // On log l'erreur d'écriture, mais on ne bloque pas la transaction d'un paiement accepté
                 System.err.println("[8081] Errore critico salvataggio file ricevuta: " + e.getMessage());
+                e.printStackTrace();
             }
         } else {
 
-            emailService.sendPaymentRejected(//message payement refuser
+            emailService.sendPaymentRejected(//MESSAGE PAYEMENT REFUSER
                     user.getEmail(),
                     user.getUsername());
         }
