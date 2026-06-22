@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="ricevuta" pageWidth="421" pageHeight="595" columnWidth="381" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
+
+    <parameter name="PARAM_ID_UTENTE" class="java.lang.String"/>
+    <parameter name="PARAM_DATA" class="java.lang.String"/>
+    <parameter name="PARAM_TOTALE" class="java.lang.String"/>
+    <parameter name="PARAM_LOGO" class="java.io.InputStream"/>
+
+    <title>
+        <band height="140">
+            <image onErrorType="Blank">
+                <reportElement x="0" y="0" width="100" height="60"/>
+                <imageExpression><![CDATA[$P{PARAM_LOGO}]]></imageExpression>
+            </image>
+
+            <staticText>
+                <reportElement x="100" y="15" width="281" height="30"/>
+                <textElement textAlignment="Right">
+                    <font size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[RICEVUTA DI PAGAMENTO]]></text>
+            </staticText>
+
+            <line>
+                <reportElement x="0" y="80" width="381" height="1"/>
+            </line>
+
+            <staticText>
+                <reportElement x="0" y="100" width="120" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Identificativo Utente:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="130" y="100" width="251" height="20"/>
+                <textFieldExpression><![CDATA[$P{PARAM_ID_UTENTE}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <detail>
+        <band height="100">
+            <staticText>
+                <reportElement x="0" y="10" width="120" height="20"/>
+                <textElement>
+                    <font isBold="true"/>
+                </textElement>
+                <text><![CDATA[Data del Pagamento:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="130" y="10" width="251" height="20"/>
+                <textFieldExpression><![CDATA[$P{PARAM_DATA}]]></textFieldExpression>
+            </textField>
+
+            <line>
+                <reportElement x="0" y="50" width="381" height="1"/>
+            </line>
+
+            <staticText>
+                <reportElement x="0" y="70" width="120" height="20"/>
+                <textElement>
+                    <font size="12" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Totale Pagato:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="130" y="70" width="251" height="20" forecolor="#006600"/>
+                <textElement>
+                    <font size="12" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{PARAM_TOTALE}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+</jasperReport>
