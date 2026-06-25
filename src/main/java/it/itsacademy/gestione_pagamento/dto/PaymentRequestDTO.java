@@ -18,6 +18,11 @@ public class PaymentRequestDTO {
     @NotNull(message = "Totale obbligatorio")
     @Positive(message = "Il totale deve essere maggiore di zero")
     private Double totale;
+
+    // Champs de transit pour les queues asynchrones
+    private UUID idPagamento;
+    private String nomeRicevuta;
+    private String descrizione;
 }
 
 
