@@ -13,5 +13,6 @@ public interface PagamentoMapper {
     @Mapping(target = "idPagamento", source = "pagamento.id")
     @Mapping(target = "idOrdine", source = "request.idOrdine")
     @Mapping(target = "statoPagamento", source = "pagamento.statoPagamento")
+    @Mapping(target = "nomeRicevuta", source = "pagamento.nomeRicevuta")
     PaymentResponseDTO toResponseDto(Pagamento pagamento, PaymentRequestDTO request);
 }
