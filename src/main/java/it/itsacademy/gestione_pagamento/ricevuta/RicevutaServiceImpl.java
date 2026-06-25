@@ -32,7 +32,7 @@ public class RicevutaServiceImpl {
      * @return Le nome du fichier généré (ex: RICEVUTA_20260619_1530.txt)
      * @throws IOException En cas de problème d'écriture sur le disque
      */
-    public String generareRicevutaFisica(String idUtente, String totale) throws IOException {
+    public String generareRicevutaFisica(String idUtente, String totale, String descrizioneProdotto) throws IOException {
         LocalDateTime oraAttuale = LocalDateTime.now();
 
         // Formatage du nom du fichier demandé : RICEVUTA_YYYYMMDD_HHMM.txt
@@ -72,6 +72,7 @@ public class RicevutaServiceImpl {
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("PARAM_ID_UTENTE", idUtente);
             parameters.put("PARAM_DATA", dataTesto);
+            parameters.put("PARAM_DESCRIZIONE", descrizioneProdotto);
             parameters.put("PARAM_TOTALE", totale + "€");
             parameters.put("PARAM_LOGO", logoStream);
 
