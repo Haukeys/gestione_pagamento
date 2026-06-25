@@ -10,7 +10,7 @@
     </parent>
     <groupId>it.itsacademy</groupId>
     <artifactId>gestione_pagamento</artifactId>
-    <version>0.0.4</version>
+    <version>0.0.5</version>
     <name>gestione_pagamento</name>
     <description>gestione_pagamento</description>
     <url/>
@@ -80,6 +80,11 @@
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
             <version>6.21.0</version>
+        </dependency>
+        <dependency><!--AWS S3-->
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3</artifactId>
+            <version>2.34.0</version>
         </dependency>
     </dependencies>
 
