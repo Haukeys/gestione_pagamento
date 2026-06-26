@@ -37,12 +37,14 @@ public class PaymentListenerAMQP {
     // Récupère la valeur injectée depuis l'environnement
     @Value("${aws.s3.folder}")
     private String awsS3Folder;
+
     /**
      * ÉTAPE 1 : Traitement initial et persistance
      */
     @RabbitListener(queues = "queue.pagamenti")
     public void receivePaymentRequest(PaymentRequestDTO requestDTO) {
         try {
+            // Commentaire d'origine sur le suivi du Thread et de l'ID Ordre
             log.info("[Thread: {}] JSON ricevuto per ordine ID: {}", Thread.currentThread().getName(), requestDTO.getIdOrdine());
 
             // Exécution de la transaction et sauvegarde en BDD
@@ -73,17 +75,18 @@ public class PaymentListenerAMQP {
     @RabbitListener(queues = "queue.ricevute")
     public void handleReceiptGeneration(PaymentRequestDTO requestDTO) {
         String nomeFile = null;
-        File fileNelVolume = null; // <--- 2. NETTOYÉ (PLUS DE PREFIXE java.io)
+        File fileNelVolume = null; // NETTOYÉ (PLUS DE PREFIXE java.io)
 
         try {
             String idUtenteStr = requestDTO.getIdUtente().toString();
             String totaleStr = requestDTO.getTotale() != null ? requestDTO.getTotale().toString() : "0.0";
             String descrizioneProdotto = requestDTO.getDescrizione() != null ? requestDTO.getDescrizione() : "N/D";
+
             // 1. Génération physique du PDF via le service Jasper
-            nomeFile = ricevutaService.generareRicevutaFisica(idUtenteStr, totaleStr,descrizioneProdotto);
+            nomeFile = ricevutaService.generareRicevutaFisica(idUtenteStr, totaleStr, descrizioneProdotto);
 
             // Référence vers le fichier situé dans le volume Docker
-            fileNelVolume = new File(ricevuteStoragePath + "/" + nomeFile); // <--- 2. NETTOYÉ
+            fileNelVolume = new File(ricevuteStoragePath + "/" + nomeFile);
 
             if (!fileNelVolume.exists()) {
                 log.error("[VOLUME DOCKER] Errore: Il file generato da Jasper non esiste al percorso: {}", fileNelVolume.getAbsolutePath());
@@ -98,14 +101,13 @@ public class PaymentListenerAMQP {
             log.info("Avvio caricamento asincrono su AWS S3 per la chiave: {}", s3Key);
 
             final String finalNomeFile = nomeFile;
-            final File finalFileNelVolume = fileNelVolume; // <--- 2. NETTOYÉ
 
             // 4. UPLOAD SUR S3 AVEC LA CLÉ COMPLÈTE EN PREMIER PARAMÈTRE
             s3StorageService.uploadPdfAsync(s3Key, fileNelVolume.toPath())
                     .whenComplete((response, exception) -> {
 
                         if (exception != null) {
-                            log.error("[AWS S3] Errore critico durante l'upload su {}: {}", s3Key, exception.getMessage());
+                            log.error("[AWS S3] Errore criticale durante l'upload su {}: {}", s3Key, exception.getMessage());
                             rabbitTemplate.convertAndSend("orders.exchange", "receipt.routing.email", requestDTO);
                         } else {
                             log.info("[Thread: {}] [AWS S3] Upload completato con successo! ETag ricevuto: {}", Thread.currentThread().getName(), response.eTag());
@@ -116,17 +118,8 @@ public class PaymentListenerAMQP {
                             // On stocke le nom du fichier dans le DTO pour l'envoi de l'email
                             requestDTO.setNomeRicevuta(finalNomeFile);
 
-                            // NETTOYAGE LOCAL (VM Ubuntu)
-                            if (finalFileNelVolume.exists()) {
-                                boolean isDeleted = finalFileNelVolume.delete();
-                                if (isDeleted) {
-                                    log.info("[VOLUME DOCKER] File temporaneo locale eliminato con successo dal volume.");
-                                } else {
-                                    log.warn("[VOLUME DOCKER] Impossibile eliminare il file dal volume.");
-                                }
-                            }
-
-                            // On pousse vers la file d'attente d'Email
+                            // NOUVEAU COMMENTAIRE : On supprime le nettoyage ici pour éviter que l'e-mail ne trouve pas le fichier.
+                            // On délègue la suppression à l'étape suivante (l'e-mail).
                             rabbitTemplate.convertAndSend("orders.exchange", "receipt.routing.email", requestDTO);
                         }
                     });
@@ -138,7 +131,7 @@ public class PaymentListenerAMQP {
     }
 
     /**
-     * ÉTAPE 3 : Notifications e-mails (Succès ou Échec)
+     * ÉTAPE 3 : Notifications e-mails (Succès ou Échec) & Nettoyage final du Volume
      */
     @RabbitListener(queues = "queue.notifications")
     public void handleEmailNotification(PaymentRequestDTO requestDTO) {
@@ -150,6 +143,17 @@ public class PaymentListenerAMQP {
                 // Envoi de l'email de confirmation avec le PDF attaché depuis le volume Docker
                 emailService.sendPaymentAcceptedWithAttachment(user.getEmail(), user.getUsername(), requestDTO.getNomeRicevuta());
                 log.info("[Queue-Email] Email di conferma con allegato inviata con successo a: {}", user.getEmail());
+
+                // NOUVEAU : NETTOYAGE LOCAL SÉCURISÉ (Déplacé ici pour laisser le temps à l'e-mail de s'envoyer)
+                File fileDaEliminare = new File(ricevuteStoragePath + "/" + requestDTO.getNomeRicevuta());
+                if (fileDaEliminare.exists()) {
+                    boolean isDeleted = fileDaEliminare.delete();
+                    if (isDeleted) {
+                        log.info("[VOLUME DOCKER] File temporaneo locale eliminato con successo dal volume dopo l'invio dell'email.");
+                    } else {
+                        log.warn("[VOLUME DOCKER] Impossibile eliminare il file dal volume.");
+                    }
+                }
             } else {
                 // Envoi du mail de rejet simple en cas d'absence de reçu (Paiement refusé)
                 emailService.sendPaymentRejected(user.getEmail(), user.getUsername());
