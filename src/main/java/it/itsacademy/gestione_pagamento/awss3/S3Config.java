@@ -7,6 +7,7 @@ import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -40,6 +41,22 @@ public class S3Config {
                 ))
                 // Tempo di attesa massima per l'interazione con AWS
                 .overrideConfiguration(b -> b.apiCallTimeout(Duration.ofMinutes(2)))
+                .build();
+    }
+    /**
+     * AJOUT : Bean S3Presigner pour la génération des URLs sécurisées temporaires.
+     * Il utilise les mêmes Docker Secrets pour signer les requêtes de téléchargement.
+     */
+    @Bean
+    public S3Presigner s3Presigner() throws IOException {
+        String accessKey = Files.readString(Paths.get(accessKeyFilePath)).trim();
+        String secretKey = Files.readString(Paths.get(secretKeyFilePath)).trim();
+
+        return S3Presigner.builder()
+                .region(Region.of(region))
+                .credentialsProvider(StaticCredentialsProvider.create(
+                        AwsBasicCredentials.create(accessKey, secretKey)
+                ))
                 .build();
     }
 }
