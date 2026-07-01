@@ -4,15 +4,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.services.s3.S3AsyncClient;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -100,5 +104,29 @@ public class S3StorageService {
 
         // On retourne l'URL complète sous forme de String
         return presignedRequest.url().toString();
+    }
+
+    /**
+     * Télécharge un fichier (MultipartFile) directement sur S3 de manière synchrone.
+     * Le dossier racine de l'application est masqué via la propriété rootFolder ($).
+     */
+    public PutObjectResponse uploadMultipartFile(String idUtente, UUID idOrdine, MultipartFile file) throws IOException {
+        String nomeFileOriginale = file.getOriginalFilename();
+
+        String keyName = this.rootFolder + "/" + idUtente + "/giustificativi/GIUSTIFICATIVO_" + idOrdine + "_" + nomeFileOriginale;
+
+        log.info("[S3] Clé d'archivage masquée générée : {}", keyName);
+
+        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
+                .bucket(bucketName)
+                .key(keyName)
+                .contentType(file.getContentType())
+                .build();
+
+        // Solution asynchrone : Utiliser AsyncRequestBody.fromBytes() avec file.getBytes()
+        return s3AsyncClient.putObject(
+                putObjectRequest,
+                AsyncRequestBody.fromBytes(file.getBytes())
+        ).join();
     }
 }
