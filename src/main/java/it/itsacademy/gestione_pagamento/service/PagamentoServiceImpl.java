@@ -1,15 +1,19 @@
 package it.itsacademy.gestione_pagamento.service;
 
+import it.itsacademy.gestione_pagamento.awss3.S3StorageService;
 import it.itsacademy.gestione_pagamento.dto.PagamentoHistoryDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentRequestDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentResponseDTO;
 import it.itsacademy.gestione_pagamento.entity.Pagamento;
 import it.itsacademy.gestione_pagamento.entity.TipoPagamento;
+import it.itsacademy.gestione_pagamento.mapper.PagamentoMapper;
 import it.itsacademy.gestione_pagamento.repository.PagamentoRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
@@ -18,13 +22,15 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor // Génère automatiquement le constructeur pour injecter PagamentoRepository
 public class PagamentoServiceImpl implements PagamentoService {
 
+    private final PagamentoMapper pagamentoMapper;
     private final PagamentoRepository pagamentoRepository;
     private final Random random = new Random(); // Générateur aléatoire servant à simuler une passerelle bancaire (ex: Stripe/PayPal)
-
+    private final S3StorageService s3StorageService;
     /**
      * ÉTAPE 1 DU FLUX GLOBAL : Traitement de la transaction et persistance immédiate.
      * Cette méthode a été allégée au maximum (toute la logique de génération PDF, upload S3 et e-mail
@@ -134,4 +140,50 @@ public class PagamentoServiceImpl implements PagamentoService {
         // Appel de la requête de suppression personnalisée du Repository
         pagamentoRepository.deleteByStatoPagamento(TipoPagamento.RIFIUTATO);
     }
+
+    @Override
+    @Transactional
+    public PaymentResponseDTO registraPagamentoAssegno(String idUtente, UUID idOrdine, MultipartFile file) {
+        String nomeFileOriginale = file.getOriginalFilename();
+
+        Pagamento pagamento = new Pagamento();
+        pagamento.setIdOrdine(idOrdine);
+        pagamento.setDataPagamento(LocalDate.now());
+        pagamento.setNomeRicevuta(nomeFileOriginale);
+
+        boolean uploadOk = false;
+
+        try {
+            // Tentative d'upload sur AWS S3
+            s3StorageService.uploadMultipartFile(idUtente, idOrdine, file);
+            log.info("[S3] Justificatif chargé avec succès pour l'ordre : {}", idOrdine);
+
+            pagamento.setStatoPagamento(TipoPagamento.ACCETTATO);
+            uploadOk = true;
+
+        } catch (Exception e) {
+            // En cas de crash S3, on enregistre quand même le refus en BDD pour l'historique
+            log.error("[CRITICAL] Erreur lors de l'upload S3. Le paiement est refusé.", e);
+            pagamento.setStatoPagamento(TipoPagamento.RIFIUTATO);
+        }
+
+        // Sauvegarde persistante dans MySQL
+        pagamento = pagamentoRepository.save(pagamento);
+        log.info("[DB STATUS] Transaction enregistrée en BDD avec le statut : {}", pagamento.getStatoPagamento());
+
+        // Si l'upload a échoué, on lève l'exception Spring ici !
+        if (!uploadOk) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Erreur critique S3, paiement refusé");
+        }
+
+        // Si tout est OK, on construit et retourne le DTO de succès
+        PaymentResponseDTO response = new PaymentResponseDTO();
+        response.setIdPagamento(pagamento.getId());
+        response.setIdOrdine(pagamento.getIdOrdine());
+        response.setStatoPagamento(pagamento.getStatoPagamento());
+        response.setNomeRicevuta(pagamento.getNomeRicevuta());
+
+        return pagamentoMapper.toResponseDtoDirect(pagamento);
+    }
+
 }
