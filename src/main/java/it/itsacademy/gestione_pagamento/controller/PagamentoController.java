@@ -1,5 +1,6 @@
 package it.itsacademy.gestione_pagamento.controller;
 
+import it.itsacademy.gestione_pagamento.awss3.S3StorageService;
 import it.itsacademy.gestione_pagamento.dto.PagamentoHistoryDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentRequestDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentResponseDTO;
@@ -8,8 +9,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +23,25 @@ import java.util.UUID;
 public class PagamentoController {
 
     private final PagamentoService pagamentoService;
+    private final S3StorageService s3StorageService;
+
+    /**
+     * NOUVEL ENDPOINT : Gestion du paiement par chèque/virement avec MultipartFile
+     */
+    @PutMapping(value = "/pagamentoTramiteAssegno/{idOrdine}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<PaymentResponseDTO> pagaTramiteAssegno(
+            @RequestHeader("X-User-Id") String idUtente,
+            @PathVariable("idOrdine") UUID idOrdine, // <-- On le récupère directement depuis l'URL !
+            @RequestPart("ricevutaAssegno") MultipartFile file,
+            HttpServletRequest httpRequest) {
+
+        logRequestInfos(httpRequest);
+
+        // On passe directement l'idOrdine au service
+        PaymentResponseDTO response = pagamentoService.registraPagamentoAssegno(idUtente, idOrdine, file);
+
+        return ResponseEntity.ok(response);
+    }
 
     /**
      * Point d'entrée pour le RestClient du projet gestione_ordini.
