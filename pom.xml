@@ -46,7 +46,7 @@
         <dependency><!--LOMBOK-->
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.30</version> <scope>provided</scope>
         </dependency>
         <dependency><!--JPA TEST-->
             <groupId>org.springframework.boot</groupId>
