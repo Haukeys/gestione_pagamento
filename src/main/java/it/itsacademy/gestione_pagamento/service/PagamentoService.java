@@ -3,6 +3,7 @@ package it.itsacademy.gestione_pagamento.service;
 import it.itsacademy.gestione_pagamento.dto.PagamentoHistoryDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentRequestDTO;
 import it.itsacademy.gestione_pagamento.dto.PaymentResponseDTO;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -13,4 +14,5 @@ public interface PagamentoService {
     public List<PagamentoHistoryDTO> getPaymentsByOrderId(UUID idOrdine);
     public PaymentResponseDTO getPaymentStatusByOrdineId(UUID idOrdine);
     public void eliminaPagamentiRifiutati();
+    public PaymentResponseDTO registraPagamentoAssegno(String idUtente, UUID idOrdine, MultipartFile file);
 }
